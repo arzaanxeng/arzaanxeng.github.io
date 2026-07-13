@@ -118,6 +118,7 @@ img{max-width:100%;display:block;}
   gap:clamp(10px,2vw,14px);
 }
 .nav__links a{
+  display:inline-block;
   font-family:var(--body);
   font-weight:600;
   font-size:0.85rem;
@@ -149,10 +150,11 @@ img{max-width:100%;display:block;}
     background:var(--white);
     padding:16px clamp(20px,4vw,56px) 24px;
     gap:12px;
-    transform:translateY(-110%);
+    transform:translateY(calc(-100% - var(--nav-h)));
     transition:transform .3s ease;
+    pointer-events:none;
   }
-  .nav__links.is-open{transform:translateY(0);}
+  .nav__links.is-open{transform:translateY(0); pointer-events:auto;}
   .nav__links a{text-align:center;}
   .nav__toggle{display:inline-block;}
 }
