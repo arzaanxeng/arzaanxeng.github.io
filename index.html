@@ -195,7 +195,7 @@ img{max-width:100%;display:block;}
 }
 
 @media (max-width:760px){
-  .hero__giant, .hero__treeviz{display:none;}
+  .hero__giant{display:none;}
 }
 
 
@@ -1124,6 +1124,19 @@ footer a:hover{text-decoration:underline;}
 .nav{z-index:100;}
 .nav__links{z-index:99;}
 
+/* Binary tree viz: show on mobile as a normal-flow card instead of hiding it */
+@media (max-width:760px){
+  .hero__treeviz{
+    display:block;
+    position:relative;
+    z-index:auto;
+    top:auto; right:auto; left:auto;
+    transform:none;
+    width:min(280px,72vw);
+    margin:0 0 24px;
+  }
+}
+
 /* ── 480px and below — small phones ── */
 @media (max-width:480px){
 
@@ -1223,6 +1236,7 @@ footer a:hover{text-decoration:underline;}
     width:100%;
   }
   .contact__socials .pill-btn{
+    flex:0 0 auto;
     width:200px;
     text-align:center;
     justify-content:center;
