@@ -1,4 +1,4 @@
-<!-- Deploy retry -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -445,10 +445,11 @@ section{
 }
 .section__title{
   font-family:var(--display);
+  font-optical-sizing:auto;
   font-weight:600;
   font-size:clamp(2.1rem,4.6vw,3.2rem);
-  letter-spacing:-0.01em;
-  line-height:1.12;
+  letter-spacing:normal; /* negative tracking made descenders (e.g. the "j" in "Projects") crowd the next letter and look clipped */
+  line-height:1.25; /* extra room so descenders (j/g/y) never get visually cut off */
 }
 .section__desc{
   font-family:var(--body);
@@ -762,6 +763,27 @@ section{
   margin:16px 0 0;
 }
 .about__text + .about__text{margin-top:12px;}
+.about__list{
+  margin:16px 0 0;
+  padding:0;
+  list-style:none;
+}
+.about__list li{
+  font-family:var(--body);
+  font-size:1rem;
+  line-height:1.7;
+  color:var(--ink-soft);
+  padding-left:22px;
+  position:relative;
+}
+.about__list li + li{margin-top:12px;}
+.about__list li::before{
+  content:'—';
+  position:absolute;
+  left:0;
+  color:var(--pink);
+  font-weight:700;
+}
 .about__stats{
   margin-top:32px;
   display:flex;
@@ -816,7 +838,7 @@ section{
 .code-widget__main{
   display:grid;
   grid-template-columns:1fr auto;
-  min-height:220px;
+  height:220px; /* fixed (not min-height) so the widget can never grow/shrink during the typing animation */
 }
 .code-editor{
   padding:16px 0;
@@ -911,22 +933,10 @@ section{
 }
 .code-info__val--pink{color:var(--pink);}
 .code-info__val--blue{color:#FF8DBB;}
-.code-widget__terminal{
-  background:#0A0A0A;
-  border-top:1px solid rgba(255,255,255,0.08);
-  padding:12px 16px;
-}
-.term-line{
-  font-family:var(--mono);
-  font-size:0.71rem;
-  color:rgba(255,255,255,0.4);
-  line-height:1.8;
-  opacity:0;
-  transition:opacity .2s ease;
-}
-.term-line.is-shown{opacity:1;}
-.term-prompt{color:var(--pink); margin-right:6px;}
-.term-ok{color:#FF8DBB;}
+/* Terminal footer (.code-widget__terminal / .term-line) removed on purpose —
+   it used to grow taller as lines were appended, expanding the whole widget
+   and shifting the page layout. The widget now stays a fixed height and only
+   the code lines type in / fade out inside #codeEditor. */
 
 @media(max-width:900px){
   .about__layout{
@@ -949,8 +959,6 @@ section{
   .code-line{padding:1.5px 10px;}
   .code-ln{width:18px; margin-right:10px;}
   .code-text{font-size:0.68rem;}
-  .code-widget__terminal{padding:10px 12px;}
-  .term-line{font-size:0.65rem;}
   /* reduce box-shadow more on very small screens */
   .code-widget{
     box-shadow:4px 5px 0 var(--pink);
@@ -964,8 +972,6 @@ section{
   .code-text{font-size:0.64rem; line-height:1.6;}
   .code-widget__filename{font-size:0.6rem;}
   .code-widget{box-shadow:3px 4px 0 var(--pink); font-size:0.68rem;}
-  .code-widget__terminal{padding:8px 10px;}
-  .term-line{font-size:0.6rem;}
 }
 
 /* ===================== CONTACT ===================== */
@@ -1681,6 +1687,8 @@ footer a:hover{text-decoration:underline;}
 <body>
 
 <!-- ===================== NAV ===================== -->
+<!-- Sticky header nav. Link order matches the section order below the hero,
+     so the scroll-highlight (active pill) moves left→right in sync with scrolling. -->
 <nav class="nav" id="mainNav" aria-label="Main navigation">
   <a href="#top" class="nav__logo">Arzaan Portfolio</a>
   <div class="nav__right">
@@ -1688,15 +1696,16 @@ footer a:hover{text-decoration:underline;}
   </div>
   <ul class="nav__links" id="navLinks">
     <li><a href="#projects">Projects</a></li>
-    <li><a href="#building">Building</a></li>
     <li><a href="#skills">Skills</a></li>
     <li><a href="#resume">Resume</a></li>
+    <li><a href="#building">Building</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
 </nav>
 
 <!-- ===================== HERO ===================== -->
+<!-- Landing/intro area with name, tagline, and CTA buttons -->
 <header class="hero" id="top">
   <div class="hero__bg" aria-hidden="true"></div>
 
@@ -1756,6 +1765,7 @@ footer a:hover{text-decoration:underline;}
 </header>
 
 <!-- ===================== PROJECTS ===================== -->
+<!-- Finished, shipped projects — each card opens the case-study modal (see CASE STUDY MODAL below) -->
 <section id="projects" aria-label="Projects">
   <div class="section__head">
     <span class="section__eyebrow">Projects</span>
@@ -1901,6 +1911,7 @@ footer a:hover{text-decoration:underline;}
 </section>
 
 <!-- ===================== SKILLS ===================== -->
+<!-- Tech stack / tools grid -->
 <section id="skills" aria-label="Skills">
   <div class="section__head">
     <span class="section__eyebrow">Skills</span>
@@ -1962,6 +1973,7 @@ footer a:hover{text-decoration:underline;}
 </section>
 
 <!-- ===================== RESUME ===================== -->
+<!-- Credentials summary + resume download/view -->
 <section id="resume" aria-label="Resume and credentials">
   <div class="section__head">
     <span class="section__eyebrow">Resume</span>
@@ -2005,17 +2017,83 @@ footer a:hover{text-decoration:underline;}
   </div>
 </section>
 
+<!-- ===================== CURRENTLY BUILDING ===================== -->
+<!-- Active side-projects and research not yet finished / not on the main Projects grid -->
+<section id="building" aria-label="Currently Building">
+  <div class="section__head">
+    <span class="section__eyebrow">Currently Building</span>
+    <h2 class="section__title">What's in the oven</h2>
+    <p class="section__desc">Projects actively in development — from idea to implementation.</p>
+  </div>
+  <div class="building-grid">
+
+    <div class="building-card">
+      <div class="building-card__status building-card__status--active">
+        <span class="status-dot"></span>In Progress
+      </div>
+      <div class="building-card__name">Basketball Player Performance Analyser</div>
+      <p class="building-card__desc">Analysing basketball player performance using computer vision — detecting and tracking players with YOLO and evaluating movement/actions with a deep learning CNN pipeline.</p>
+      <div class="building-card__stack">
+        <span class="building-chip">Computer Vision</span>
+        <span class="building-chip">YOLO</span>
+        <span class="building-chip">CNN</span>
+      </div>
+      <div class="building-card__progress">
+        <div class="progress-label"><span>Progress</span><span>35%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+      </div>
+    </div>
+
+    <div class="building-card">
+      <div class="building-card__status building-card__status--active">
+        <span class="status-dot"></span>In Progress
+      </div>
+      <div class="building-card__name">8-bit CPU from Scratch</div>
+      <p class="building-card__desc">Building an 8-bit CPU from the ground up using only ICs, logic gates, and discrete components — no pre-built microcontroller.</p>
+      <div class="building-card__stack">
+        <span class="building-chip">ICs</span>
+        <span class="building-chip">Logic Gates</span>
+        <span class="building-chip">Digital Electronics</span>
+      </div>
+      <div class="building-card__progress">
+        <div class="progress-label"><span>Progress</span><span>20%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+      </div>
+    </div>
+
+    <div class="building-card">
+      <div class="building-card__status building-card__status--research">
+        <span class="status-dot"></span>Research
+      </div>
+      <div class="building-card__name">EE Research Paper — Deep Learning Methods</div>
+      <p class="building-card__desc">Working on a research paper in Electrical Engineering based on deep learning methods.</p>
+      <div class="building-card__stack">
+        <span class="building-chip">Deep Learning</span>
+        <span class="building-chip">Electrical Engineering</span>
+        <span class="building-chip">Research</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- ===================== ABOUT ===================== -->
+<!-- Bio + the "whoami.py" typewriter widget on the right (fixed-height, see JS near bottom of file) -->
 <section id="about" aria-label="About">
   <div class="about__layout">
 
     <div class="about__wrap">
       <h2 class="about__title">Hi, I'm Syed Arzaan.</h2>
-      <p class="about__text">EE student at NIT Hamirpur obsessed with AI/ML, Gen-AI, and DSA. I build things that actually run — four ML projects deployed (three on Streamlit Cloud, one Dockerized FastAPI service on Railway), actively exploring deep learning and large language models, and sharpening algorithmic thinking through data structures and competitive programming.</p>
-      <p class="about__text">The goal is a serious AI/ML engineering profile. The hardware background is already there — now it's about making the software just as strong.</p>
+      <ul class="about__list">
+        <li>Electrical Engineering undergraduate at NIT Hamirpur with a focused specialization in applied AI/ML and Generative AI</li>
+        <li>Delivered four production-grade ML systems, including three cloud-hosted applications on Streamlit and a containerized FastAPI service deployed on Railway</li>
+        <li>Advancing technical depth in deep learning architectures and large language models</li>
+        <li>Strengthening algorithmic foundations through consistent practice in data structures and competitive programming</li>
+        <li>Bridging a strong hardware engineering background with growing software and ML expertise to build a distinctive, full-stack AI/ML profile</li>
+      </ul>
       <div class="about__stats">
         <div><div class="stat__num">9.0</div><div class="stat__label">CGPA, 2 semesters</div></div>
-        <div><div class="stat__num">JEE</div><div class="stat__label">Mains &amp; Advanced qualifier</div></div>
+        <div><div class="stat__num">JEE</div><div class="stat__label">Adv. qualifier — top ~1.3% of 1.5M</div></div>
         <div><div class="stat__num">2nd</div><div class="stat__label">Integration Bee</div></div>
       </div>
     </div>
@@ -2053,77 +2131,16 @@ footer a:hover{text-decoration:underline;}
           </div>
         </div>
       </div>
-      <div class="code-widget__terminal" id="codeTerminal"></div>
+      <!-- Terminal footer intentionally removed: it grew the widget's height as lines
+           were appended, which made the About section jump/expand mid-animation. -->
     </div>
 
   </div>
 </section>
 
-<!-- ===================== CURRENTLY BUILDING ===================== -->
-<section id="building" aria-label="Currently Building">
-  <div class="section__head">
-    <span class="section__eyebrow">Currently Building</span>
-    <h2 class="section__title">What's in the oven</h2>
-    <p class="section__desc">Projects actively in development — from idea to implementation.</p>
-  </div>
-  <div class="building-grid">
-
-    <div class="building-card">
-      <div class="building-card__status building-card__status--active">
-        <span class="status-dot"></span>In Progress
-      </div>
-      <div class="building-card__name">CNN Image Classifier</div>
-      <p class="building-card__desc">Convolutional neural network built from scratch in PyTorch — custom training loop, data augmentation, and evaluation on a real image dataset.</p>
-      <div class="building-card__stack">
-        <span class="building-chip">PyTorch</span>
-        <span class="building-chip">CNN</span>
-        <span class="building-chip">Torchvision</span>
-      </div>
-      <div class="building-card__progress">
-        <div class="progress-label"><span>Progress</span><span>40%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
-      </div>
-    </div>
-
-    <div class="building-card">
-      <div class="building-card__status building-card__status--active">
-        <span class="status-dot"></span>In Progress
-      </div>
-      <div class="building-card__name">ML Finance Dashboard</div>
-      <p class="building-card__desc">Stock movement prediction + portfolio risk analysis using time-series ML. Served via FastAPI with a Streamlit frontend.</p>
-      <div class="building-card__stack">
-        <span class="building-chip">PyTorch</span>
-        <span class="building-chip">FastAPI</span>
-        <span class="building-chip">Streamlit</span>
-        <span class="building-chip">Plotly</span>
-      </div>
-      <div class="building-card__progress">
-        <div class="progress-label"><span>Progress</span><span>30%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
-      </div>
-    </div>
-
-    <div class="building-card">
-      <div class="building-card__status building-card__status--research">
-        <span class="status-dot"></span>Research
-      </div>
-      <div class="building-card__name">Diffusion Model Explorer</div>
-      <p class="building-card__desc">Reimplementing a simplified diffusion model from scratch to understand image generation — noise scheduling, the reverse denoising process, and sampling.</p>
-      <div class="building-card__stack">
-        <span class="building-chip">PyTorch</span>
-        <span class="building-chip">Diffusion Models</span>
-        <span class="building-chip">NumPy</span>
-      </div>
-      <div class="building-card__progress">
-        <div class="progress-label"><span>Progress</span><span>15%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:15%"></div></div>
-      </div>
-    </div>
-
-  </div>
-</section>
 
 <!-- ===================== CONTACT ===================== -->
+<!-- Closing CTA + email/socials -->
 <section id="contact" aria-label="Contact">
   <div class="contact__wrap">
     <span class="section__eyebrow" style="text-align:center; display:block;">Contact</span>
@@ -2297,6 +2314,7 @@ sections.forEach(s => observer.observe(s));
 </script>
 
 <!-- ===================== CASE STUDY MODAL ===================== -->
+<!-- Shared modal markup, populated dynamically from CASE_STUDIES data when a project card is clicked -->
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal" id="modal">
     <div class="modal__header">
@@ -2539,9 +2557,13 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
 </script>
 
 <script>
+// ── "whoami.py" typewriter widget (About section) ──────────────────
+// Types the class definition in line-by-line, holds, then fades the
+// lines back out and repeats — purely inside the fixed-height
+// #codeEditor box. No footer/terminal output is added anymore (that
+// used to make the whole widget grow taller and shift the page).
 (function(){
-  const editor   = document.getElementById('codeEditor');
-  const terminal = document.getElementById('codeTerminal');
+  const editor = document.getElementById('codeEditor');
   if(!editor) return;
 
   const reduced = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -2554,12 +2576,6 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
     { n:5,  html:'        self.<span class="nm">branch</span>   <span class="op">=</span> <span class="st">"Electrical Engineering"</span>' },
     { n:6,  html:'        self.<span class="nm">year</span>     <span class="op">=</span> <span class="st">"2nd Year"</span>' },
     { n:7,  html:'        self.<span class="nm">cgpa</span>     <span class="op">=</span> <span class="nm">9.00</span>' },
-  ];
-
-  const TERM = [
-    { prompt:true, text:'python whoami.py' },
-    { prompt:false, text:'<span class="term-ok">✓</span> Name: Syed Arzaan' },
-    { prompt:false, text:'<span class="term-ok">✓</span> Status: Open to internships' },
   ];
 
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -2578,7 +2594,6 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
     cur.id = 'cursorLine';
     cur.innerHTML = '<span class="code-ln">'+(LINES.length+1)+'</span><span class="code-text"><span class="code-cursor"></span></span>';
     editor.appendChild(cur);
-    terminal.innerHTML = '';
   }
 
   async function animateCode(){
@@ -2586,9 +2601,9 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
     const rows = editor.querySelectorAll('.code-line:not(#cursorLine)');
     const cursorLine = document.getElementById('cursorLine');
 
+    // type lines in, one by one
     for(let i=0; i<rows.length; i++){
       rows[i].classList.add('is-shown');
-      // move cursor to next line number
       if(cursorLine){
         const nextN = LINES[i+1] ? LINES[i+1].n+1 : LINES[LINES.length-1].n+1;
         cursorLine.querySelector('.code-ln').textContent = nextN;
@@ -2596,35 +2611,22 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
       await sleep(reduced ? 0 : 110 + Math.random()*60);
     }
 
-    // terminal animation
-    await sleep(500);
-    if(cursorLine) cursorLine.remove();
+    // hold on the finished code for a moment
+    await sleep(2200);
 
-    for(let t of TERM){
-      const el = document.createElement('div');
-      el.className = 'term-line';
-      el.innerHTML = t.prompt
-        ? '<span class="term-prompt">$</span>' + t.text
-        : t.text;
-      terminal.appendChild(el);
-      await sleep(20);
-      el.classList.add('is-shown');
-      await sleep(reduced ? 0 : 380);
+    // fade lines back out (in reverse) instead of appending anything below
+    for(let i=rows.length-1; i>=0; i--){
+      rows[i].classList.remove('is-shown');
+      await sleep(reduced ? 0 : 60);
     }
-
-    await sleep(3200);
+    if(cursorLine) cursorLine.classList.remove('is-shown');
+    await sleep(500);
   }
 
   async function loop(){
     if(reduced){
       buildLines();
       editor.querySelectorAll('.code-line').forEach(l => l.classList.add('is-shown'));
-      TERM.forEach(t => {
-        const el = document.createElement('div');
-        el.className = 'term-line is-shown';
-        el.innerHTML = t.prompt ? '<span class="term-prompt">$</span>'+t.text : t.text;
-        terminal.appendChild(el);
-      });
       return;
     }
     while(true) await animateCode();
