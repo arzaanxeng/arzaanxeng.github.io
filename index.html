@@ -1,4 +1,4 @@
-
+<!-- Deploy retry -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -445,11 +445,16 @@ section{
 }
 .section__title{
   font-family:var(--display);
-  font-optical-sizing:auto;
-  font-weight:600;
+  /* Safari has a known bug where mixing the `font-weight` shorthand with a
+     variable font that also has an `opsz` axis (like Fraunces) can miscompute
+     the axis interpolation and corrupt individual glyphs (the "j" here).
+     Setting BOTH axes explicitly via font-variation-settings, and dropping
+     `font-weight`/`font-optical-sizing` entirely, avoids that mixed-mode path. */
+  font-variation-settings:'opsz' 24, 'wght' 600;
+  font-feature-settings:'calt' 0, 'liga' 0; /* disable contextual alternates/ligatures in case those were swapping in an alternate "j" */
   font-size:clamp(2.1rem,4.6vw,3.2rem);
-  letter-spacing:normal; /* negative tracking made descenders (e.g. the "j" in "Projects") crowd the next letter and look clipped */
-  line-height:1.25; /* extra room so descenders (j/g/y) never get visually cut off */
+  letter-spacing:normal;
+  line-height:1.25;
 }
 .section__desc{
   font-family:var(--body);
@@ -838,7 +843,7 @@ section{
 .code-widget__main{
   display:grid;
   grid-template-columns:1fr auto;
-  height:220px; /* fixed (not min-height) so the widget can never grow/shrink during the typing animation */
+  min-height:220px; /* floor only — actual height comes from the (now static) content on both sides, so it can't grow/shrink after load */
 }
 .code-editor{
   padding:16px 0;
@@ -1990,7 +1995,7 @@ footer a:hover{text-decoration:underline;}
     <div class="resume-card">
       <div class="resume-card__index">02</div>
       <div class="resume-card__num">JEE</div>
-      <div class="resume-card__label">Mains &amp; Advanced Qualifier</div>
+      <div class="resume-card__label">Advanced Qualifier — Top ~1.3% of 1.5M</div>
     </div>
     <div class="resume-card">
       <div class="resume-card__index">03</div>
@@ -2091,11 +2096,6 @@ footer a:hover{text-decoration:underline;}
         <li>Strengthening algorithmic foundations through consistent practice in data structures and competitive programming</li>
         <li>Bridging a strong hardware engineering background with growing software and ML expertise to build a distinctive, full-stack AI/ML profile</li>
       </ul>
-      <div class="about__stats">
-        <div><div class="stat__num">9.0</div><div class="stat__label">CGPA, 2 semesters</div></div>
-        <div><div class="stat__num">JEE</div><div class="stat__label">Adv. qualifier — top ~1.3% of 1.5M</div></div>
-        <div><div class="stat__num">2nd</div><div class="stat__label">Integration Bee</div></div>
-      </div>
     </div>
 
     <div class="code-widget" aria-hidden="true">
