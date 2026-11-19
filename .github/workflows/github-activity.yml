@@ -1,0 +1,44 @@
+name: Refresh GitHub activity data
+
+# Regenerates data/github-contributions.json for the heatmap on the portfolio.
+# Uses the workflow's built-in token, so no personal access token is needed
+# and nothing secret is ever shipped to the website.
+
+on:
+  schedule:
+    - cron: '23 1 * * *'   # daily, 01:23 UTC
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write           # needed to commit the refreshed JSON
+
+concurrency:
+  group: github-activity
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch contribution calendar
+        run: node scripts/fetch-github-contributions.mjs "${{ github.repository_owner }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/github-contributions.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh GitHub activity data"
+            git push
+          fi

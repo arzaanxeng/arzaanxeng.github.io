@@ -1557,6 +1557,213 @@ footer a:hover{text-decoration-color:var(--text);}
   .modal__footer{padding:14px 18px;}
   .modal__tab{padding:10px 13px; font-size:0.65rem;}
 }
+/* ═══════════════════════════════════
+   GITHUB ACTIVITY & OPEN SOURCE
+   Contribution heatmap + filterable pull-request list.
+   Every selector is prefixed .gh- and built from the :root tokens,
+   so nothing above this block is affected.
+   ═══════════════════════════════════ */
+.gh-section{background:var(--bg-2);}
+.gh-wrap{
+  /* monochrome activity ramp: dark gray (none) -> near-white (most) */
+  --gh-l0:var(--surface-2);
+  --gh-l1:#4A4A53;
+  --gh-l2:#74747F;
+  --gh-l3:#B0B0B8;
+  --gh-l4:var(--text);
+  /* restrained status accents */
+  --gh-merged:#A78BFA;
+  --gh-open:var(--ok);
+  --gh-closed:#F0706A;
+  max-width:var(--maxw-wide);
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+}
+.gh-panel{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+}
+.gh-panel__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:14px;
+  padding-bottom:18px;
+  margin-bottom:20px;
+  border-bottom:1px dotted var(--border-strong);
+}
+.gh-panel__title{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:1.1rem;
+  letter-spacing:-0.03em;
+  color:var(--text);
+}
+.gh-total{font-family:var(--mono);font-size:0.78rem;letter-spacing:0.02em;color:var(--text-2);}
+.gh-total strong{color:var(--text);font-weight:700;}
+.gh-total em{font-style:normal;color:var(--text-2);margin-left:8px;}
+
+/* — heatmap — */
+.gh-heat{
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:2px 2px 10px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--border-strong) transparent;
+}
+.gh-grid{
+  --gh-weeks:53;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  width:100%;
+}
+.gh-months,.gh-row{
+  display:grid;
+  grid-template-columns:32px repeat(var(--gh-weeks),minmax(10px,16px));
+  gap:3px;
+}
+.gh-months{height:16px;margin-bottom:2px;}
+.gh-month{font-family:var(--mono);font-size:0.66rem;letter-spacing:0.02em;color:var(--text-2);white-space:nowrap;line-height:1;}
+.gh-daylabel{font-family:var(--mono);font-size:0.62rem;letter-spacing:0.02em;color:var(--text-2);align-self:center;line-height:1;}
+.gh-cell{
+  aspect-ratio:1/1;
+  border-radius:3px;
+  background:var(--gh-l0);
+  outline:1px solid transparent;
+  outline-offset:-1px;
+  transition:outline-color .15s ease;
+}
+.gh-cell--void{visibility:hidden;}
+.gh-cell[data-l="1"],.gh-legend__sw[data-l="1"]{background:var(--gh-l1);}
+.gh-cell[data-l="2"],.gh-legend__sw[data-l="2"]{background:var(--gh-l2);}
+.gh-cell[data-l="3"],.gh-legend__sw[data-l="3"]{background:var(--gh-l3);}
+.gh-cell[data-l="4"],.gh-legend__sw[data-l="4"]{background:var(--gh-l4);}
+.gh-legend__sw[data-l="0"]{background:var(--gh-l0);}
+.gh-cell[role="gridcell"]:hover{outline-color:var(--text-2);}
+.gh-cell[role="gridcell"]:focus-visible{outline:2px solid var(--accent);outline-offset:1px;position:relative;z-index:1;}
+.gh-grid.is-loading .gh-cell{animation:ghPulse 1.6s ease-in-out infinite;}
+@keyframes ghPulse{50%{opacity:0.45;}}
+
+.gh-legend{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  margin-top:14px;
+  font-family:var(--mono);
+  font-size:0.66rem;
+  letter-spacing:0.02em;
+  color:var(--text-2);
+}
+.gh-legend__sw{width:11px;height:11px;border-radius:3px;display:inline-block;}
+.gh-legend span:first-child{margin-right:4px;}
+.gh-legend span:last-child{margin-left:4px;}
+
+.gh-tip{
+  position:fixed;
+  left:0;top:0;
+  z-index:50;
+  transform:translateX(-50%);
+  pointer-events:none;
+  background:var(--surface-2);
+  border:1px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  padding:6px 10px;
+  font-family:var(--mono);
+  font-size:0.68rem;
+  letter-spacing:0.02em;
+  color:var(--text);
+  white-space:nowrap;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .15s ease,visibility .15s ease;
+}
+.gh-tip.is-on{opacity:1;visibility:visible;}
+
+/* — pull requests — */
+.gh-filters{display:inline-flex;gap:6px;}
+.gh-filter{
+  font-family:var(--mono);
+  font-size:0.7rem;
+  letter-spacing:0.02em;
+  color:var(--text-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:6px 12px;
+  transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+.gh-filter:hover{background:var(--surface-2);color:var(--text);}
+.gh-filter[aria-pressed="true"]{background:var(--surface-2);color:var(--text);border-color:var(--border-strong);}
+
+.gh-list{list-style:none;}
+.gh-list li + li .gh-pr{border-top:1px dotted var(--border-strong);}
+.gh-pr{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  padding:14px 10px;
+  margin:0 -10px;
+  border-radius:var(--radius-sm);
+  transition:background .2s ease;
+}
+.gh-list li + li .gh-pr{border-top-left-radius:0;border-top-right-radius:0;}
+.gh-pr:hover,.gh-pr:focus-visible{background:var(--surface);}
+.gh-dot{width:8px;height:8px;border-radius:50%;background:var(--text-2);flex:none;}
+.gh-pr[data-status="merged"] .gh-dot{background:var(--gh-merged);}
+.gh-pr[data-status="open"] .gh-dot{background:var(--gh-open);}
+.gh-pr[data-status="closed"] .gh-dot{background:var(--gh-closed);}
+.gh-pr__main{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.gh-pr__title{
+  font-family:var(--body);
+  font-weight:500;
+  font-size:0.92rem;
+  line-height:1.4;
+  color:var(--text);
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+}
+.gh-pr__repo{font-family:var(--mono);font-size:0.7rem;letter-spacing:0.02em;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gh-pr__meta{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:0.68rem;letter-spacing:0.02em;color:var(--text-2);white-space:nowrap;}
+.gh-pr__arrow{color:var(--text-3);transition:color .2s ease,transform .2s ease;}
+.gh-pr:hover .gh-pr__arrow,.gh-pr:focus-visible .gh-pr__arrow{color:var(--text);transform:translate(2px,-2px);}
+.gh-pr--skel{pointer-events:none;}
+.gh-skel{display:block;height:12px;border-radius:4px;background:var(--surface-2);animation:ghPulse 1.6s ease-in-out infinite;}
+
+.gh-more{display:flex;justify-content:center;margin-top:18px;}
+.gh-more[hidden]{display:none;}
+.gh-btn{
+  display:inline-block;
+  font-family:var(--body);
+  font-weight:500;
+  font-size:0.78rem;
+  color:var(--text-2);
+  border:1px solid var(--border-strong);
+  border-radius:999px;
+  padding:8px 18px;
+  transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+.gh-btn:hover,.gh-btn:focus-visible{background:var(--surface-2);color:var(--text);border-color:var(--accent);}
+
+.gh-state{padding:28px 12px;text-align:center;font-family:var(--mono);font-size:0.78rem;line-height:1.6;color:var(--text-2);}
+.gh-state__actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:16px;}
+.gh-note{margin-top:14px;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.02em;color:var(--text-2);text-align:center;}
+.gh-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+@media(max-width:600px){
+  .gh-section{padding:72px clamp(20px,5vw,80px);}
+  .gh-panel{padding:18px;}
+  .gh-pr{gap:12px;}
+  .gh-pr__meta .gh-pr__arrow{display:none;}
+}
 </style>
 </head>
 <body>
@@ -2064,6 +2271,56 @@ footer a:hover{text-decoration-color:var(--text);}
     </div>
 
   </div>
+</section>
+
+<!-- ===================== GITHUB ACTIVITY & OPEN SOURCE ===================== -->
+<!-- Contribution heatmap + filterable pull-request list. Both are filled at runtime from GitHub
+     (see the "GitHub Activity & Open Source" script at the bottom of this file). Intentionally has
+     no id, so the nav scroll-highlight observer above leaves it alone. -->
+<section class="gh-section" aria-labelledby="ghTitle">
+  <div class="section__head">
+    <span class="section__eyebrow">GitHub</span>
+    <h2 class="section__title" id="ghTitle">GitHub Activity &amp; Open Source</h2>
+    <p class="section__desc">A live view of my contribution history over the past year, and the pull requests I've sent to other projects.</p>
+  </div>
+
+  <div class="gh-wrap">
+
+    <div class="gh-panel">
+      <div class="gh-panel__head">
+        <p class="gh-total" id="ghTotal">Loading contributions…</p>
+      </div>
+      <div class="gh-heat" id="ghHeat"></div>
+      <div class="gh-legend" aria-hidden="true">
+        <span>Less active</span>
+        <span class="gh-legend__sw" data-l="0"></span>
+        <span class="gh-legend__sw" data-l="1"></span>
+        <span class="gh-legend__sw" data-l="2"></span>
+        <span class="gh-legend__sw" data-l="3"></span>
+        <span class="gh-legend__sw" data-l="4"></span>
+        <span>More active</span>
+      </div>
+    </div>
+
+    <div class="gh-panel">
+      <div class="gh-panel__head">
+        <h3 class="gh-panel__title">Open Source Contributions</h3>
+        <div class="gh-filters" role="group" aria-label="Filter pull requests by status">
+          <button type="button" class="gh-filter" data-filter="merged" aria-pressed="true">Merged</button>
+          <button type="button" class="gh-filter" data-filter="open" aria-pressed="false">Open</button>
+          <button type="button" class="gh-filter" data-filter="closed" aria-pressed="false">Closed</button>
+        </div>
+      </div>
+      <div id="ghPrBody"></div>
+      <div class="gh-more" id="ghMore" hidden>
+        <button type="button" class="gh-btn" id="ghMoreBtn" aria-expanded="false">View All</button>
+      </div>
+      <p class="gh-sr" id="ghPrStatus" role="status"></p>
+    </div>
+
+  </div>
+
+  <div class="gh-tip" id="ghTip" role="tooltip"></div>
 </section>
 
 <!-- ===================== ABOUT ===================== -->
@@ -2724,5 +2981,497 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
   });
 })();
 </script>
+<script>
+// ── GitHub Activity & Open Source Contributions ─────────────────────
+// Everything is wrapped in one IIFE so it adds nothing to the global scope.
+//
+// Heatmap data, in order of preference:
+//   1. data/github-contributions.json — written on a schedule by
+//      .github/workflows/github-activity.yml using GitHub's GraphQL API and the
+//      workflow's own token, so no token ever reaches this page.
+//   2. A public contributions API (CAL_API) — used if (1) is missing or older than 2 days.
+//   3. Whatever was last cached in localStorage, flagged as cached.
+// Pull requests come straight from GitHub's public search API (CORS-enabled, no token).
+// Nothing is hardcoded: every count and every PR is fetched, then cached in localStorage.
+(function(){
+  'use strict';
+
+  /* ───────── config ───────── */
+  const USER              = 'arzaanxeng';
+  const EXCLUDE_OWN_REPOS = true;               // true = only PRs sent to other people's repos
+  const PR_PER_PAGE       = 100;                // GitHub's maximum
+  const PR_MAX_PAGES      = 10;                 // search API stops at 1000 results anyway
+  const PR_COLLAPSED      = 4;                  // rows shown before "View All"
+  const TTL_PR            = 30 * 60 * 1000;     // PR cache: 30 min
+  const TTL_CAL           = 6 * 60 * 60 * 1000; // heatmap cache: 6 h
+  const STATIC_MAX_AGE    = 48 * 60 * 60 * 1000;
+  const CAL_STATIC        = 'data/github-contributions.json';
+  const CAL_API           = 'https://github-contributions-api.jogruber.de/v4/' + USER + '?y=last';
+  const PROFILE_URL       = 'https://github.com/' + USER;
+
+  const root = document.querySelector('.gh-section');
+  if(!root) return;
+  const $ = id => document.getElementById(id);
+  const heatEl = $('ghHeat'), totalEl = $('ghTotal'), tipEl = $('ghTip');
+  const prBody = $('ghPrBody'), moreWrap = $('ghMore'), moreBtn = $('ghMoreBtn'), statusEl = $('ghPrStatus');
+  const filterBtns = Array.from(root.querySelectorAll('.gh-filter'));
+
+  /* ───────── small helpers ───────── */
+  function el(tag, cls, text){
+    const n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(text != null) n.textContent = text;       // textContent only — PR titles are untrusted text
+    return n;
+  }
+  const plural = (n, word) => n + ' ' + word + (n === 1 ? '' : 's');
+  const safeUrl = u => (typeof u === 'string' && /^https:\/\/github\.com\//.test(u)) ? u : PROFILE_URL;
+
+  const store = {
+    read(key){ try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } },
+    write(key, value){ try{ localStorage.setItem(key, JSON.stringify({t: Date.now(), v: value})); }catch(e){} }
+  };
+  const isFresh = (entry, ttl) => !!entry && typeof entry.t === 'number' && Date.now() - entry.t < ttl;
+
+  class GhError extends Error{
+    constructor(kind, message){ super(message); this.kind = kind; }
+  }
+
+  async function getJSON(url, init){
+    let res;
+    try{ res = await fetch(url, init); }
+    catch(e){ throw new GhError('network', 'Network request failed'); }
+    if(!res.ok){
+      const limited = (res.status === 403 || res.status === 429) &&
+                      (res.headers.get('x-ratelimit-remaining') === '0' || res.headers.get('retry-after'));
+      if(limited){
+        const err = new GhError('rate', 'GitHub rate limit reached');
+        const reset = Number(res.headers.get('x-ratelimit-reset'));
+        err.resetAt = reset ? reset * 1000 : null;
+        throw err;
+      }
+      throw new GhError('http', 'HTTP ' + res.status);
+    }
+    try{ return await res.json(); }
+    catch(e){ throw new GhError('parse', 'Unexpected response format'); }
+  }
+
+  function errorBlock(err, retry){
+    const box = el('div', 'gh-state');
+    let msg = 'Couldn’t load this from GitHub right now.';
+    if(err && err.kind === 'rate'){
+      msg = 'GitHub’s API rate limit was reached.';
+      if(err.resetAt){
+        const mins = Math.max(1, Math.ceil((err.resetAt - Date.now()) / 60000));
+        msg += ' Try again in about ' + plural(mins, 'minute') + '.';
+      }
+    }
+    box.appendChild(el('p', null, msg));
+    const actions = el('div', 'gh-state__actions');
+    const btn = el('button', 'gh-btn', 'Retry');
+    btn.type = 'button';
+    btn.addEventListener('click', retry);
+    const link = el('a', 'gh-btn', 'View on GitHub ↗');
+    link.href = PROFILE_URL; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    actions.append(btn, link);
+    box.appendChild(actions);
+    return box;
+  }
+
+  /* ═════════════ 1. CONTRIBUTION HEATMAP ═════════════ */
+  const DAY = 86400000;
+  const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const DAY_LABELS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+  const fmtLong  = new Intl.DateTimeFormat('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric', timeZone:'UTC'});
+  const fmtShort = new Intl.DateTimeFormat('en-US', {weekday:'short', year:'numeric', month:'short', day:'numeric', timeZone:'UTC'});
+  const fmtMonth = new Intl.DateTimeFormat('en-US', {month:'short', timeZone:'UTC'});
+
+  const utcDay = (y, m, d) => new Date(Date.UTC(y, m, d));
+  const isoDay = d => d.toISOString().slice(0, 10);
+
+  // GitHub buckets contributions by UTC day, so all date maths here is UTC.
+  // Window = the same calendar date one year ago (+1 day) through today: 365 days.
+  function calendarWindow(){
+    const n = new Date();
+    const end = utcDay(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate());
+    const start = new Date(utcDay(end.getUTCFullYear() - 1, end.getUTCMonth(), end.getUTCDate()).getTime() + DAY);
+    return {start, end};
+  }
+
+  // [{date:'YYYY-MM-DD', count:n}, …]  ->  {'YYYY-MM-DD': n} (non-zero days only)
+  function parseContribs(list){
+    if(!Array.isArray(list)) throw new GhError('parse', 'Unexpected response format');
+    const days = {};
+    list.forEach(c => {
+      if(c && /^\d{4}-\d{2}-\d{2}$/.test(c.date) && Number.isFinite(c.count) && c.count > 0){
+        days[c.date] = Math.floor(c.count);
+      }
+    });
+    return days;
+  }
+
+  async function fromStatic(){
+    let res;
+    try{ res = await fetch(CAL_STATIC, {cache: 'no-cache'}); }catch(e){ return null; }
+    if(!res.ok) return null;                       // file not generated yet
+    let data;
+    try{ data = await res.json(); }catch(e){ return null; }
+    return {days: parseContribs(data.contributions), source: 'static', generatedAt: Date.parse(data.generatedAt) || 0};
+  }
+  async function fromApi(){
+    const data = await getJSON(CAL_API);
+    return {days: parseContribs(data.contributions), source: 'api', generatedAt: Date.now()};
+  }
+
+  async function loadCalendar(force){
+    const key = 'ghact:v1:cal:' + USER;
+    const cached = store.read(key);
+    if(!force && isFresh(cached, TTL_CAL)) return cached.v;
+
+    let staleStatic = null, lastErr = null;
+    try{
+      const s = await fromStatic();
+      if(s){
+        if(Date.now() - s.generatedAt < STATIC_MAX_AGE){ store.write(key, s); return s; }
+        staleStatic = s;                           // too old: try the API, keep this as a last resort
+      }
+    }catch(e){ lastErr = e; }
+    try{
+      const a = await fromApi();
+      store.write(key, a);
+      return a;
+    }catch(e){ lastErr = e; }
+
+    const fallback = [staleStatic, cached && cached.v].filter(Boolean)
+                       .sort((a, b) => b.generatedAt - a.generatedAt)[0];
+    if(fallback) return Object.assign({}, fallback, {stale: true});
+    throw lastErr || new GhError('network', 'No data source available');
+  }
+
+  // Quartile thresholds over the non-zero days, so one huge day can't wash out the rest.
+  function levelFn(counts){
+    const nz = counts.filter(c => c > 0).sort((a, b) => a - b);
+    if(!nz.length) return () => 0;
+    const at = p => nz[Math.ceil(p * nz.length) - 1];
+    const t1 = at(0.25), t2 = at(0.5), t3 = at(0.75);
+    return c => c <= 0 ? 0 : 1 + (c > t1 ? 1 : 0) + (c > t2 ? 1 : 0) + (c > t3 ? 1 : 0);
+  }
+
+  let cells = [];          // cells[week][weekday] -> element (undefined outside the window)
+  let activeCell = null;   // the one cell with tabindex=0 (roving tabindex)
+
+  function renderHeat(days, opts){
+    opts = opts || {};
+    const {start, end} = calendarWindow();
+    const gridStart = new Date(start.getTime() - start.getUTCDay() * DAY);   // Sunday on/before start
+    const weeks = Math.floor((end.getTime() - gridStart.getTime()) / DAY / 7) + 1;
+
+    const grid = el('div', 'gh-grid');
+    grid.style.setProperty('--gh-weeks', weeks);
+    const months = el('div', 'gh-months');
+    months.setAttribute('aria-hidden', 'true');
+    const rows = [];
+    for(let d = 0; d < 7; d++){
+      const row = el('div', 'gh-row');
+      const label = el('span', 'gh-daylabel', DAY_LABELS[d]);
+      if(!opts.skeleton){
+        row.setAttribute('role', 'row');
+        label.setAttribute('role', 'rowheader');
+        label.setAttribute('aria-label', DAY_NAMES[d]);
+      }
+      row.appendChild(label);
+      rows.push(row);
+    }
+
+    cells = [];
+    let total = 0, lastCell = null;
+    const counts = [], real = [], monthMarks = [];
+    for(let w = 0; w < weeks; w++){
+      cells.push([]);
+      for(let d = 0; d < 7; d++){
+        const date = new Date(gridStart.getTime() + (w * 7 + d) * DAY);
+        if(date < start || date > end){
+          const gap = el('span', 'gh-cell gh-cell--void');
+          gap.setAttribute('role', 'presentation');
+          rows[d].appendChild(gap);
+          continue;
+        }
+        const key = isoDay(date);
+        const count = opts.skeleton ? 0 : (days[key] || 0);
+        total += count; counts.push(count);
+        const c = el('div', 'gh-cell');
+        c.dataset.w = w; c.dataset.d = d; c.dataset.date = key; c.dataset.count = count;
+        if(!opts.skeleton){
+          c.setAttribute('role', 'gridcell');
+          c.tabIndex = -1;
+          c.setAttribute('aria-label', (count ? plural(count, 'contribution') : 'No contributions') + ' on ' + fmtLong.format(date));
+        }
+        cells[w][d] = c; real.push(c); lastCell = c;
+        rows[d].appendChild(c);
+        if(date.getUTCDate() === 1 || (w === 0 && key === isoDay(start))){
+          monthMarks.push({w, label: fmtMonth.format(date)});
+        }
+      }
+    }
+    const level = levelFn(counts);
+    real.forEach(c => { c.dataset.l = level(+c.dataset.count); });
+
+    // month labels: drop a too-close first label so "Nov" and "Dec" never overlap
+    if(monthMarks.length > 1 && monthMarks[1].w - monthMarks[0].w < 3) monthMarks.shift();
+    monthMarks.forEach(m => {
+      const s = el('span', 'gh-month', m.label);
+      s.style.gridColumn = String(m.w + 2);        // column 1 is the weekday-label gutter
+      months.appendChild(s);
+    });
+
+    grid.appendChild(months);
+    rows.forEach(r => grid.appendChild(r));
+    if(opts.skeleton){
+      grid.classList.add('is-loading');
+      grid.setAttribute('aria-hidden', 'true');
+    }else{
+      grid.setAttribute('role', 'grid');
+      grid.setAttribute('aria-label', 'Contribution calendar for ' + USER + ': ' + plural(total, 'contribution') +
+                        ' in the last year. Use the arrow keys to move between days.');
+      if(lastCell){ lastCell.tabIndex = 0; activeCell = lastCell; }
+    }
+    heatEl.replaceChildren(grid);
+    heatEl.scrollLeft = heatEl.scrollWidth;        // phones: start on the most recent weeks
+
+    totalEl.replaceChildren();
+    if(opts.skeleton){
+      totalEl.textContent = 'Loading contributions…';
+    }else{
+      totalEl.append(el('strong', null, total.toLocaleString('en-US')), ' contributions in the last year');
+      if(opts.stale) totalEl.appendChild(el('em', null, '(cached)'));
+    }
+  }
+
+  function showTip(cell){
+    const count = +cell.dataset.count;
+    tipEl.textContent = (count ? plural(count, 'contribution') : 'No contributions') + ' on ' +
+                        fmtShort.format(new Date(cell.dataset.date + 'T00:00:00Z'));
+    tipEl.classList.add('is-on');
+    const r = cell.getBoundingClientRect();
+    const tw = tipEl.offsetWidth, th = tipEl.offsetHeight;
+    const vw = document.documentElement.clientWidth;
+    const x = Math.max(8 + tw / 2, Math.min(vw - 8 - tw / 2, r.left + r.width / 2));
+    let y = r.top - 8 - th;
+    if(y < 72) y = r.bottom + 8;                   // not enough room above (fixed nav): flip below
+    tipEl.style.left = x + 'px';
+    tipEl.style.top = y + 'px';
+  }
+  const hideTip = () => tipEl.classList.remove('is-on');
+  const cellOf = target => target && target.closest ? target.closest('[role="gridcell"]') : null;
+
+  heatEl.addEventListener('pointerover', e => { const c = cellOf(e.target); if(c) showTip(c); else hideTip(); });
+  heatEl.addEventListener('pointerleave', hideTip);
+  heatEl.addEventListener('scroll', hideTip, {passive: true});
+  window.addEventListener('scroll', hideTip, {passive: true});
+  document.addEventListener('pointerdown', e => { if(!heatEl.contains(e.target)) hideTip(); });
+  heatEl.addEventListener('focusin', e => {
+    const c = cellOf(e.target);
+    if(!c) return;
+    if(activeCell && activeCell !== c) activeCell.tabIndex = -1;
+    c.tabIndex = 0; activeCell = c;
+    showTip(c);
+  });
+  heatEl.addEventListener('focusout', hideTip);
+  heatEl.addEventListener('keydown', e => {
+    const cur = cellOf(e.target);
+    if(!cur) return;
+    const w = +cur.dataset.w, d = +cur.dataset.d;
+    let nw = w, nd = d;
+    switch(e.key){
+      case 'ArrowLeft':  nw = w - 1; break;
+      case 'ArrowRight': nw = w + 1; break;
+      case 'ArrowUp':    nd = d - 1; break;
+      case 'ArrowDown':  nd = d + 1; break;
+      case 'Home': nw = cells.findIndex(col => col[d]); break;
+      case 'End':  for(nw = cells.length - 1; nw >= 0 && !cells[nw][d]; nw--); break;
+      default: return;
+    }
+    e.preventDefault();
+    const target = cells[nw] && cells[nw][nd];
+    if(target) target.focus();
+  });
+
+  async function loadHeat(force){
+    renderHeat({}, {skeleton: true});
+    try{
+      const r = await loadCalendar(force);
+      renderHeat(r.days, {stale: r.stale});
+    }catch(err){
+      totalEl.textContent = 'Contribution data unavailable';
+      heatEl.replaceChildren(errorBlock(err, () => loadHeat(true)));
+    }
+  }
+
+  /* ═════════════ 2. OPEN SOURCE PULL REQUESTS ═════════════ */
+  const STATUS_TEXT = {merged: 'Merged', open: 'Open', closed: 'Closed'};
+  const EMPTY_MSG = {
+    merged: 'No merged pull requests yet.',
+    open:   'No open pull requests right now.',
+    closed: 'No closed pull requests.'
+  };
+  const fmtDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+
+  let prs = null, prState = 'loading', prError = null, prStale = false;
+  let filter = 'merged', expanded = false;
+
+  // status: merged  -> has merged_at
+  //         open    -> state open
+  //         closed  -> state closed AND never merged (so merged PRs never appear twice)
+  // date:   the activity that matters for that status — merged_at / closed_at / last update
+  function normalizePr(item){
+    const mergedAt = item.pull_request && item.pull_request.merged_at;
+    const status = mergedAt ? 'merged' : (item.state === 'open' ? 'open' : 'closed');
+    const date = mergedAt || (status === 'closed' ? item.closed_at : item.updated_at) || item.updated_at;
+    return {
+      title: String(item.title || '(untitled)'),
+      repo:  String(item.repository_url || '').replace(/^.*\/repos\//, ''),
+      url:   item.html_url,
+      status, date
+    };
+  }
+
+  async function fetchAllPrs(){
+    const q = 'author:' + USER + ' type:pr' + (EXCLUDE_OWN_REPOS ? ' -user:' + USER : '');
+    let all = [], total = Infinity;
+    for(let page = 1; page <= PR_MAX_PAGES && all.length < total; page++){
+      const url = 'https://api.github.com/search/issues?q=' + encodeURIComponent(q) +
+                  '&sort=updated&order=desc&per_page=' + PR_PER_PAGE + '&page=' + page;
+      const data = await getJSON(url, {headers: {Accept: 'application/vnd.github+json'}});
+      if(!data || !Array.isArray(data.items)) throw new GhError('parse', 'Unexpected response format');
+      total = Number.isFinite(data.total_count) ? data.total_count : all.length + data.items.length;
+      all = all.concat(data.items);
+      if(data.items.length < PR_PER_PAGE) break;
+    }
+    return all.map(normalizePr);
+  }
+
+  async function loadPrs(force){
+    const key = 'ghact:v1:pr:' + USER + (EXCLUDE_OWN_REPOS ? ':ext' : ':all');
+    const cached = store.read(key);
+    if(!force && isFresh(cached, TTL_PR) && Array.isArray(cached.v)){
+      prs = cached.v; prStale = false; prState = 'ready'; renderPrs(); return;
+    }
+    prState = 'loading'; renderPrs();
+    try{
+      prs = await fetchAllPrs();
+      store.write(key, prs);
+      prStale = false; prState = 'ready';
+    }catch(err){
+      if(cached && Array.isArray(cached.v)){ prs = cached.v; prStale = true; prState = 'ready'; }
+      else{ prError = err; prState = 'error'; }
+    }
+    renderPrs();
+  }
+
+  function skeletonList(){
+    const ul = el('ul', 'gh-list');
+    ul.setAttribute('aria-hidden', 'true');
+    for(let i = 0; i < PR_COLLAPSED; i++){
+      const li = el('li');
+      const row = el('div', 'gh-pr gh-pr--skel');
+      row.appendChild(el('span', 'gh-dot'));
+      const main = el('span', 'gh-pr__main');
+      const a = el('span', 'gh-skel'); a.style.width = (62 - i * 6) + '%';
+      const b = el('span', 'gh-skel'); b.style.width = '28%';
+      main.append(a, b);
+      row.appendChild(main);
+      li.appendChild(row);
+      ul.appendChild(li);
+    }
+    return ul;
+  }
+
+  function prItem(p){
+    const li = el('li');
+    const a = el('a', 'gh-pr');
+    a.href = safeUrl(p.url); a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.dataset.status = p.status;
+
+    const dot = el('span', 'gh-dot');
+    dot.setAttribute('aria-hidden', 'true');
+    dot.title = STATUS_TEXT[p.status];
+
+    const title = el('span', 'gh-pr__title');
+    title.append(el('span', 'gh-sr', STATUS_TEXT[p.status] + ' pull request: '), p.title);
+    const main = el('span', 'gh-pr__main');
+    main.append(title, el('span', 'gh-pr__repo', p.repo));
+
+    const meta = el('span', 'gh-pr__meta');
+    const time = el('time', null, fmtDate.format(new Date(p.date)));
+    time.dateTime = p.date;
+    const arrow = el('span', 'gh-pr__arrow', '↗');
+    arrow.setAttribute('aria-hidden', 'true');
+    meta.append(time, arrow);
+
+    a.append(dot, main, meta);
+    li.appendChild(a);
+    return li;
+  }
+
+  function renderPrs(){
+    prBody.setAttribute('aria-busy', prState === 'loading' ? 'true' : 'false');
+    prBody.replaceChildren();
+    moreWrap.hidden = true;
+
+    if(prState === 'loading'){
+      prBody.appendChild(skeletonList());
+      statusEl.textContent = 'Loading pull requests';
+      return;
+    }
+    if(prState === 'error'){
+      prBody.appendChild(errorBlock(prError, () => loadPrs(true)));
+      statusEl.textContent = 'Could not load pull requests';
+      return;
+    }
+
+    const list = prs.filter(p => p.status === filter)
+                    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));     // newest first
+    if(!list.length){
+      prBody.appendChild(el('p', 'gh-state', EMPTY_MSG[filter]));
+      statusEl.textContent = EMPTY_MSG[filter];
+      return;
+    }
+    const shown = expanded ? list : list.slice(0, PR_COLLAPSED);
+    const ul = el('ul', 'gh-list');
+    shown.forEach(p => ul.appendChild(prItem(p)));
+    prBody.appendChild(ul);
+    if(prStale) prBody.appendChild(el('p', 'gh-note', 'Showing cached data — GitHub couldn’t be reached.'));
+
+    if(list.length > PR_COLLAPSED){
+      moreWrap.hidden = false;
+      moreBtn.textContent = expanded ? 'Show Less' : 'View All';
+      moreBtn.setAttribute('aria-expanded', String(expanded));
+    }
+    statusEl.textContent = 'Showing ' + shown.length + ' of ' + list.length + ' ' + filter + ' pull requests';
+  }
+
+  filterBtns.forEach(btn => btn.addEventListener('click', () => {
+    filter = btn.dataset.filter;
+    expanded = false;
+    filterBtns.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    renderPrs();
+  }));
+  moreBtn.addEventListener('click', () => { expanded = !expanded; renderPrs(); });
+
+  /* ═════════════ boot ═════════════ */
+  // Reserve the layout immediately, but only hit the network once the section is near the viewport.
+  renderHeat({}, {skeleton: true});
+  renderPrs();
+  function start(){ loadHeat(); loadPrs(); }
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver(entries => {
+      if(entries.some(e => e.isIntersecting)){ io.disconnect(); start(); }
+    }, {rootMargin: '400px 0px'});
+    io.observe(root);
+  }else{
+    start();
+  }
+})();
+</script>
+
 </body>
 </html>
