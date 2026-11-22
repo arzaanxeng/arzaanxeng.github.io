@@ -1781,7 +1781,7 @@ footer a:hover{text-decoration-color:var(--text);}
 </style>
 </head>
 <body>
-<a class="skip-link" href="#projects">Skip to content</a>
+<a class="skip-link" href="#main">Skip to content</a>
 
 <!-- ===================== NAV ===================== -->
 <!-- Sticky header nav. Link order matches the section order below the hero,
@@ -1859,7 +1859,7 @@ footer a:hover{text-decoration-color:var(--text);}
   </div>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
 <!-- ===================== PROJECTS ===================== -->
 <!-- Finished, shipped projects — each card opens the case-study modal (see CASE STUDY MODAL below) -->
 <section id="projects" aria-label="Projects">
@@ -2119,7 +2119,7 @@ footer a:hover{text-decoration-color:var(--text);}
           <div class="cred-winbar" aria-hidden="true"><span class="dot dot--r"></span><span class="dot dot--y"></span><span class="dot dot--g"></span><span class="winname">ml.app</span></div>
           <div class="cred-body">
             <span class="cred-category">Projects</span>
-            <h3 class="cred-title">4 ML projects deployed</h3>
+            <h3 class="cred-title">ML apps deployed live</h3>
             <p class="cred-desc">Plus open-source work on Mesa and EE research on microgrids</p>
           </div>
         </li>
@@ -2349,6 +2349,16 @@ navToggle.addEventListener('click', () => {
   const open = navLinks.classList.toggle('is-open');
   navToggle.setAttribute('aria-expanded', open);
 });
+function closeNav(){
+  navLinks.classList.remove('is-open');
+  navToggle.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && navLinks.classList.contains('is-open')){ closeNav(); navToggle.focus(); }
+});
+document.addEventListener('click', e => {
+  if(navLinks.classList.contains('is-open') && !mainNav.contains(e.target)) closeNav();
+});
 navLinks.querySelectorAll('a').forEach(a => {
   a.addEventListener('click', () => {
     navLinks.classList.remove('is-open');
@@ -2514,14 +2524,14 @@ sections.forEach(s => observer.observe(s));
       <button class="modal__close" id="modalClose" aria-label="Close">✕</button>
     </div>
     <div class="modal__tabs" id="modalTabs" role="tablist" aria-label="Case study sections">
-      <button class="modal__tab is-active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
-      <button class="modal__tab" data-tab="architecture" role="tab" aria-selected="false">Architecture</button>
-      <button class="modal__tab" data-tab="stack" role="tab" aria-selected="false">Tech Stack</button>
-      <button class="modal__tab" data-tab="challenges" role="tab" aria-selected="false">Challenges</button>
-      <button class="modal__tab" data-tab="performance" role="tab" aria-selected="false">Performance</button>
-      <button class="modal__tab" data-tab="future" role="tab" aria-selected="false">Future</button>
+      <button class="modal__tab is-active" id="tab-overview" data-tab="overview" role="tab" aria-selected="true" aria-controls="modalBody" tabindex="0">Overview</button>
+      <button class="modal__tab" id="tab-architecture" data-tab="architecture" role="tab" aria-selected="false" aria-controls="modalBody" tabindex="-1">Architecture</button>
+      <button class="modal__tab" id="tab-stack" data-tab="stack" role="tab" aria-selected="false" aria-controls="modalBody" tabindex="-1">Tech Stack</button>
+      <button class="modal__tab" id="tab-challenges" data-tab="challenges" role="tab" aria-selected="false" aria-controls="modalBody" tabindex="-1">Challenges</button>
+      <button class="modal__tab" id="tab-performance" data-tab="performance" role="tab" aria-selected="false" aria-controls="modalBody" tabindex="-1">Performance</button>
+      <button class="modal__tab" id="tab-future" data-tab="future" role="tab" aria-selected="false" aria-controls="modalBody" tabindex="-1">Future</button>
     </div>
-    <div class="modal__body" id="modalBody" role="tabpanel" tabindex="0"></div>
+    <div class="modal__body" id="modalBody" role="tabpanel" aria-labelledby="tab-overview" tabindex="0"></div>
     <div class="modal__footer" id="modalFooter"></div>
   </div>
 </div>
@@ -2657,6 +2667,16 @@ const modalClose = document.getElementById('modalClose');
 let currentProject = null;
 let currentTab = 'overview';
 
+function setActiveTab(tab){
+  modalTabs.querySelectorAll('.modal__tab').forEach(t => {
+    const on = t === tab;
+    t.classList.toggle('is-active', on);
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+  });
+  modalBody.setAttribute('aria-labelledby', tab.id);
+}
+
 function renderModal(key){
   const p = CASE_STUDIES[key];
   if(!p) return;
@@ -2665,9 +2685,7 @@ function renderModal(key){
   modalTitle.textContent = p.title;
 
   // reset tabs
-  modalTabs.querySelectorAll('.modal__tab').forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
-  const firstTab = modalTabs.querySelector('[data-tab="overview"]');
-  firstTab.classList.add('is-active'); firstTab.setAttribute('aria-selected','true');
+  setActiveTab(modalTabs.querySelector('[data-tab="overview"]'));
 
   renderPanel(p, 'overview');
 
@@ -2741,9 +2759,24 @@ document.addEventListener('keydown', e => {
 modalTabs.addEventListener('click', e => {
   const tab = e.target.closest('.modal__tab');
   if(!tab) return;
-  modalTabs.querySelectorAll('.modal__tab').forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
-  tab.classList.add('is-active'); tab.setAttribute('aria-selected','true');
+  setActiveTab(tab);
   renderPanel(CASE_STUDIES[currentProject], tab.dataset.tab);
+});
+
+// Arrow keys / Home / End move between tabs (standard tab pattern)
+modalTabs.addEventListener('keydown', e => {
+  const list = Array.from(modalTabs.querySelectorAll('.modal__tab'));
+  const i = list.indexOf(document.activeElement);
+  if(i < 0) return;
+  let n = i;
+  if(e.key === 'ArrowRight') n = (i + 1) % list.length;
+  else if(e.key === 'ArrowLeft') n = (i - 1 + list.length) % list.length;
+  else if(e.key === 'Home') n = 0;
+  else if(e.key === 'End') n = list.length - 1;
+  else return;
+  e.preventDefault();
+  list[n].focus();
+  list[n].click();
 });
 
 // Attach to project cards
