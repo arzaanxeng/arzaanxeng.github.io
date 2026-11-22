@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write           # needed to commit the refreshed JSON
+  pages: write              # needed to ask GitHub Pages to rebuild after the commit
 
 concurrency:
   group: github-activity
@@ -40,5 +41,16 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: refresh GitHub activity data"
+            git pull --rebase origin "${{ github.ref_name }}"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+        id: commit
+
+      # Pushes made with the built-in token do not always start a Pages build,
+      # so ask for one directly. Best effort: never fail the job over this.
+      - name: Rebuild GitHub Pages
+        if: steps.commit.outputs.changed == 'true'
+        run: gh api --method POST "/repos/${{ github.repository }}/pages/builds" || echo "Pages rebuild request skipped"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
