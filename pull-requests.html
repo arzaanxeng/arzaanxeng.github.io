@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pull Requests · Syed Arzaan</title>
+<meta name="description" content="Open source pull requests by Syed Arzaan — merged, open and closed, newest first.">
+<meta name="author" content="Syed Arzaan">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="color-scheme" content="dark">
+<link rel="canonical" href="https://arzaanxeng.github.io/pull-requests.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Same design tokens as index.html, so this page looks like part of the portfolio. */
+:root{
+  color-scheme:dark;
+  --bg:#0B0B0D; --bg-2:#111114; --surface:#17171B; --surface-2:#202025;
+  --text:#F5F5F5; --text-2:#A1A1AA; --text-3:#71717A;
+  --border:#29292F; --border-strong:#3A3A42; --accent:#C4C4CC; --ok:#3FB67F;
+  --display:'Inter', system-ui, sans-serif;
+  --body:'Inter', system-ui, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius:14px; --radius-sm:8px;
+  --merged:#A78BFA; --open:var(--ok); --closed:#F0706A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--bg);}
+body{
+  font-family:var(--body);
+  color:var(--text);
+  background:var(--bg);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.5;
+}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+
+.page{max-width:760px;margin:0 auto;padding:56px clamp(20px,5vw,32px) 96px;}
+
+/* — header: back button + title — */
+.head{display:flex;align-items:center;gap:16px;padding-bottom:28px;border-bottom:1px dotted var(--border-strong);}
+.back{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:40px;height:40px;flex:none;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text-2);
+  transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+.back:hover,.back:focus-visible{background:var(--surface-2);color:var(--text);border-color:var(--border-strong);}
+.head h1{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,4vw,1.9rem);letter-spacing:-0.035em;line-height:1.15;}
+.head p{font-size:0.9rem;color:var(--text-2);}
+
+/* — title row + tabs — */
+.bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:28px 0 20px;border-bottom:1px dotted var(--border-strong);}
+.bar h2{font-family:var(--display);font-weight:700;font-size:1.15rem;letter-spacing:-0.03em;}
+.tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);}
+.tab{
+  font-family:var(--mono);font-size:0.72rem;letter-spacing:0.02em;
+  color:var(--text-2);padding:7px 14px;border-radius:6px;
+  transition:background .2s ease,color .2s ease;
+}
+.tab:hover{color:var(--text);}
+.tab[aria-selected="true"]{background:var(--surface-2);color:var(--text);}
+.tab small{margin-left:6px;font-size:0.66rem;color:var(--text-3);}
+.tab[aria-selected="true"] small{color:var(--text-2);}
+
+/* — list — */
+.list{list-style:none;}
+.list li + li .pr{border-top:1px dotted var(--border-strong);}
+.pr{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;
+  padding:16px 10px;margin:0 -10px;border-radius:var(--radius-sm);
+  transition:background .2s ease;
+}
+.list li + li .pr{border-top-left-radius:0;border-top-right-radius:0;}
+.pr:hover,.pr:focus-visible{background:var(--surface);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--text-2);flex:none;}
+.pr[data-status="merged"] .dot{background:var(--merged);}
+.pr[data-status="open"] .dot{background:var(--open);}
+.pr[data-status="closed"] .dot{background:var(--closed);}
+.pr__main{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.pr__title{
+  font-weight:500;font-size:0.95rem;line-height:1.4;color:var(--text);
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+.pr__repo{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.02em;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pr__meta{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:0.7rem;color:var(--text-2);white-space:nowrap;}
+.pr__arrow{color:var(--text-3);transition:color .2s ease,transform .2s ease;}
+.pr:hover .pr__arrow,.pr:focus-visible .pr__arrow{color:var(--text);transform:translate(2px,-2px);}
+.skel{display:block;height:12px;border-radius:4px;background:var(--surface-2);animation:pulse 1.6s ease-in-out infinite;}
+.pr--skel{pointer-events:none;}
+@keyframes pulse{50%{opacity:.45;}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none;}.pr__arrow{transition:none;}}
+
+/* — pagination — */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:28px;padding-top:20px;border-top:1px dotted var(--border-strong);}
+.pager[hidden]{display:none;}
+.pager__info{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.02em;color:var(--text-2);text-align:center;}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-weight:500;font-size:0.8rem;color:var(--text);
+  border:1px solid var(--border-strong);border-radius:999px;padding:9px 18px;
+  transition:background .2s ease,border-color .2s ease,opacity .2s ease;
+}
+.btn:hover:not(:disabled),.btn:focus-visible{background:var(--surface-2);border-color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+.state{padding:40px 12px;text-align:center;font-family:var(--mono);font-size:0.8rem;line-height:1.6;color:var(--text-2);}
+.state .btn{margin:16px 6px 0;}
+.note{margin-top:14px;font-family:var(--mono);font-size:0.68rem;color:var(--text-2);text-align:center;}
+
+@media (max-width:600px){
+  .page{padding-top:36px;}
+  .pr{gap:12px;}
+  .pr__arrow{display:none;}
+}
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="head">
+    <a class="back" href="index.html#github" aria-label="Back to portfolio">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1>Pull Requests</h1>
+      <p>Open Source Contributions</p>
+    </div>
+  </header>
+
+  <div class="bar">
+    <h2>Open Source Contributions</h2>
+    <div class="tabs" role="tablist" aria-label="Filter pull requests by status">
+      <button type="button" class="tab" role="tab" data-status="merged" aria-selected="true">Merged<small id="cnt-merged"></small></button>
+      <button type="button" class="tab" role="tab" data-status="open" aria-selected="false">Open<small id="cnt-open"></small></button>
+      <button type="button" class="tab" role="tab" data-status="closed" aria-selected="false">Closed<small id="cnt-closed"></small></button>
+    </div>
+  </div>
+
+  <div id="body" role="tabpanel" aria-live="polite"></div>
+
+  <nav class="pager" id="pager" aria-label="Pagination" hidden>
+    <button type="button" class="btn" id="prev">← Previous</button>
+    <span class="pager__info" id="info"></span>
+    <button type="button" class="btn" id="next">Next →</button>
+  </nav>
+
+</main>
+
+<script>
+// Full pull-request list: Merged / Open / Closed tabs, newest first, paginated with Previous / Next.
+// The fetch + normalise logic mirrors the "GitHub Activity & Open Source" script in index.html and
+// reads/writes the SAME localStorage cache key, so opening this page from the homepage is instant.
+(function(){
+  'use strict';
+
+  /* ───────── config ───────── */
+  const USER              = 'arzaanxeng';
+  const EXCLUDE_OWN_REPOS = true;          // must match index.html so the cache key matches
+  const PR_PER_PAGE       = 100;           // GitHub search API maximum per request
+  const PR_MAX_PAGES      = 10;            // search API caps at 1000 results anyway
+  const PAGE_SIZE         = 10;            // rows per page on THIS page
+  const TTL_PR            = 30 * 60 * 1000;
+  const CACHE_KEY         = 'ghact:v1:pr:' + USER + (EXCLUDE_OWN_REPOS ? ':ext' : ':all');
+  const PROFILE_URL       = 'https://github.com/' + USER;
+  const STATUSES          = ['merged', 'open', 'closed'];
+  const STATUS_TEXT       = {merged: 'Merged', open: 'Open', closed: 'Closed'};
+  const EMPTY_MSG         = {
+    merged: 'No merged pull requests yet.',
+    open:   'No open pull requests right now.',
+    closed: 'No closed pull requests.'
+  };
+
+  const $ = id => document.getElementById(id);
+  const bodyEl = $('body'), pagerEl = $('pager'), infoEl = $('info');
+  const prevBtn = $('prev'), nextBtn = $('next');
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  const fmtDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+
+  /* ───────── helpers ───────── */
+  function el(tag, cls, text){
+    const n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(text != null) n.textContent = text;     // textContent only — PR titles are untrusted text
+    return n;
+  }
+  const safeUrl = u => (typeof u === 'string' && /^https:\/\/github\.com\//.test(u)) ? u : PROFILE_URL;
+  const store = {
+    read(key){ try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } },
+    write(key, value){ try{ localStorage.setItem(key, JSON.stringify({t: Date.now(), v: value})); }catch(e){} }
+  };
+  const isFresh = (entry, ttl) => !!entry && typeof entry.t === 'number' && Date.now() - entry.t < ttl;
+
+  class GhError extends Error{
+    constructor(kind, message){ super(message); this.kind = kind; }
+  }
+
+  async function getJSON(url, init){
+    let res;
+    try{ res = await fetch(url, init); }
+    catch(e){ throw new GhError('network', 'Network request failed'); }
+    if(!res.ok){
+      const limited = (res.status === 403 || res.status === 429) &&
+                      (res.headers.get('x-ratelimit-remaining') === '0' || res.headers.get('retry-after'));
+      if(limited){
+        const err = new GhError('rate', 'GitHub rate limit reached');
+        const reset = Number(res.headers.get('x-ratelimit-reset'));
+        err.resetAt = reset ? reset * 1000 : null;
+        throw err;
+      }
+      throw new GhError('http', 'HTTP ' + res.status);
+    }
+    try{ return await res.json(); }
+    catch(e){ throw new GhError('parse', 'Unexpected response format'); }
+  }
+
+  /* ───────── data ───────── */
+  // merged -> has merged_at | open -> state open | closed -> state closed AND never merged
+  function normalizePr(item){
+    const mergedAt = item.pull_request && item.pull_request.merged_at;
+    const status = mergedAt ? 'merged' : (item.state === 'open' ? 'open' : 'closed');
+    const date = mergedAt || (status === 'closed' ? item.closed_at : item.updated_at) || item.updated_at;
+    return {
+      title: String(item.title || '(untitled)'),
+      repo:  String(item.repository_url || '').replace(/^.*\/repos\//, ''),
+      url:   item.html_url,
+      status, date
+    };
+  }
+
+  async function fetchAllPrs(){
+    const q = 'author:' + USER + ' type:pr' + (EXCLUDE_OWN_REPOS ? ' -user:' + USER : '');
+    let all = [], total = Infinity;
+    for(let page = 1; page <= PR_MAX_PAGES && all.length < total; page++){
+      const url = 'https://api.github.com/search/issues?q=' + encodeURIComponent(q) +
+                  '&sort=updated&order=desc&per_page=' + PR_PER_PAGE + '&page=' + page;
+      const data = await getJSON(url, {headers: {Accept: 'application/vnd.github+json'}});
+      if(!data || !Array.isArray(data.items)) throw new GhError('parse', 'Unexpected response format');
+      total = Number.isFinite(data.total_count) ? data.total_count : all.length + data.items.length;
+      all = all.concat(data.items);
+      if(data.items.length < PR_PER_PAGE) break;
+    }
+    return all.map(normalizePr);
+  }
+
+  /* ───────── state (kept in the URL: ?status=merged&page=2) ───────── */
+  let prs = null, loadState = 'loading', loadError = null, stale = false;
+  let status = 'merged', page = 1;
+
+  function readUrl(){
+    const p = new URLSearchParams(location.search);
+    const s = p.get('status');
+    status = STATUSES.indexOf(s) !== -1 ? s : 'merged';
+    const n = parseInt(p.get('page'), 10);
+    page = Number.isFinite(n) && n >= 1 ? n : 1;       // clamped again against the real page count in render()
+  }
+  function writeUrl(replace){
+    const url = new URL(location.href);
+    url.searchParams.set('status', status);
+    if(page > 1) url.searchParams.set('page', String(page)); else url.searchParams.delete('page');
+    history[replace ? 'replaceState' : 'pushState'](null, '', url);
+  }
+
+  const byStatus = s => prs.filter(p => p.status === s)
+                           .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));   // newest → oldest
+
+  /* ───────── render ───────── */
+  function skeleton(){
+    const ul = el('ul', 'list');
+    ul.setAttribute('aria-hidden', 'true');
+    for(let i = 0; i < 5; i++){
+      const li = el('li');
+      const row = el('div', 'pr pr--skel');
+      row.appendChild(el('span', 'dot'));
+      const main = el('span', 'pr__main');
+      const a = el('span', 'skel'); a.style.width = (64 - i * 6) + '%';
+      const b = el('span', 'skel'); b.style.width = '26%';
+      main.append(a, b);
+      row.appendChild(main);
+      li.appendChild(row);
+      ul.appendChild(li);
+    }
+    return ul;
+  }
+
+  function prItem(p){
+    const li = el('li');
+    const a = el('a', 'pr');
+    a.href = safeUrl(p.url); a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.dataset.status = p.status;
+
+    const dot = el('span', 'dot');
+    dot.setAttribute('aria-hidden', 'true');
+    dot.title = STATUS_TEXT[p.status];
+
+    const title = el('span', 'pr__title');
+    title.append(el('span', 'sr', STATUS_TEXT[p.status] + ' pull request: '), p.title);
+    const main = el('span', 'pr__main');
+    main.append(title, el('span', 'pr__repo', p.repo));
+
+    const meta = el('span', 'pr__meta');
+    const time = el('time', null, fmtDate.format(new Date(p.date)));
+    time.dateTime = p.date;
+    const arrow = el('span', 'pr__arrow', '↗');
+    arrow.setAttribute('aria-hidden', 'true');
+    meta.append(time, arrow);
+
+    a.append(dot, main, meta);
+    li.appendChild(a);
+    return li;
+  }
+
+  function errorBlock(err){
+    const box = el('div', 'state');
+    let msg = 'Couldn’t load pull requests from GitHub right now.';
+    if(err && err.kind === 'rate'){
+      msg = 'GitHub’s API rate limit was reached.';
+      if(err.resetAt){
+        const mins = Math.max(1, Math.ceil((err.resetAt - Date.now()) / 60000));
+        msg += ' Try again in about ' + mins + (mins === 1 ? ' minute.' : ' minutes.');
+      }
+    }
+    box.appendChild(el('p', null, msg));
+    const retry = el('button', 'btn', 'Retry');
+    retry.type = 'button';
+    retry.addEventListener('click', () => load(true));
+    const link = el('a', 'btn', 'View on GitHub ↗');
+    link.href = PROFILE_URL; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    box.append(retry, link);
+    return box;
+  }
+
+  function render(){
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.status === status)));
+    bodyEl.setAttribute('aria-busy', loadState === 'loading' ? 'true' : 'false');
+    bodyEl.replaceChildren();
+    pagerEl.hidden = true;
+
+    if(loadState === 'loading'){ bodyEl.appendChild(skeleton()); return; }
+    if(loadState === 'error'){ bodyEl.appendChild(errorBlock(loadError)); return; }
+
+    STATUSES.forEach(s => { $('cnt-' + s).textContent = byStatus(s).length; });
+
+    const list = byStatus(status);
+    if(!list.length){ bodyEl.appendChild(el('p', 'state', EMPTY_MSG[status])); return; }
+
+    const pages = Math.ceil(list.length / PAGE_SIZE);
+    if(page > pages){ page = pages; writeUrl(true); }           // e.g. ?page=99 -> last real page
+    const start = (page - 1) * PAGE_SIZE;
+    const slice = list.slice(start, start + PAGE_SIZE);
+
+    const ul = el('ul', 'list');
+    slice.forEach(p => ul.appendChild(prItem(p)));
+    bodyEl.appendChild(ul);
+    if(stale) bodyEl.appendChild(el('p', 'note', 'Showing cached data — GitHub couldn’t be reached.'));
+
+    if(pages > 1){
+      pagerEl.hidden = false;
+      prevBtn.disabled = page <= 1;
+      nextBtn.disabled = page >= pages;
+      infoEl.textContent = 'Page ' + page + ' of ' + pages + ' · ' + (start + 1) + '–' + (start + slice.length) + ' of ' + list.length;
+    }
+    document.title = STATUS_TEXT[status] + ' Pull Requests · Syed Arzaan';
+  }
+
+  /* ───────── load ───────── */
+  async function load(force){
+    const cached = store.read(CACHE_KEY);
+    if(!force && isFresh(cached, TTL_PR) && Array.isArray(cached.v)){
+      prs = cached.v; stale = false; loadState = 'ready'; render(); return;
+    }
+    loadState = 'loading'; render();
+    try{
+      prs = await fetchAllPrs();
+      store.write(CACHE_KEY, prs);
+      stale = false; loadState = 'ready';
+    }catch(err){
+      if(cached && Array.isArray(cached.v)){ prs = cached.v; stale = true; loadState = 'ready'; }
+      else{ loadError = err; loadState = 'error'; }
+    }
+    render();
+  }
+
+  /* ───────── events ───────── */
+  tabs.forEach(t => t.addEventListener('click', () => {
+    if(t.dataset.status === status) return;
+    status = t.dataset.status; page = 1;                         // new tab always starts at page 1
+    writeUrl(false); render();
+  }));
+  prevBtn.addEventListener('click', () => { if(page > 1){ page--; writeUrl(false); render(); window.scrollTo({top: 0}); } });
+  nextBtn.addEventListener('click', () => { page++; writeUrl(false); render(); window.scrollTo({top: 0}); });   // render() clamps to the last page
+  window.addEventListener('popstate', () => { readUrl(); render(); });   // browser Back/Forward move between tabs/pages
+
+  readUrl();
+  writeUrl(true);        // normalise the address bar (e.g. no query -> ?status=merged)
+  load(false);
+})();
+</script>
+</body>
+</html>
