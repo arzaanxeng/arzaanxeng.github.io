@@ -2251,7 +2251,7 @@ footer a:hover{text-decoration-color:var(--text);}
       </div>
       <div id="ghPrBody"></div>
       <div class="gh-more" id="ghMore" hidden>
-        <button type="button" class="gh-btn" id="ghMoreBtn" aria-expanded="false">View All</button>
+        <a class="gh-btn" id="ghMoreBtn" href="pull-requests.html?status=merged">Show More</a>
       </div>
       <p class="gh-sr" id="ghPrStatus" role="status"></p>
     </div>
@@ -2903,7 +2903,8 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
   const EXCLUDE_OWN_REPOS = true;               // true = only PRs sent to other people's repos
   const PR_PER_PAGE       = 100;                // GitHub's maximum
   const PR_MAX_PAGES      = 10;                 // search API stops at 1000 results anyway
-  const PR_COLLAPSED      = 4;                  // rows shown before "View All"
+  const PR_COLLAPSED      = 5;                  // rows shown here before "Show More"
+  const PR_FULL_PAGE      = 'pull-requests.html'; // "Show More" opens the full, paginated list here
   const TTL_PR            = 30 * 60 * 1000;     // PR cache: 30 min
   const TTL_CAL           = 6 * 60 * 60 * 1000; // heatmap cache: 6 h
   const STATIC_MAX_AGE    = 48 * 60 * 60 * 1000;
@@ -3218,7 +3219,7 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
   const fmtDate = new Intl.DateTimeFormat('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
 
   let prs = null, prState = 'loading', prError = null, prStale = false;
-  let filter = 'merged', expanded = false;
+  let filter = 'merged';
 
   // status: merged  -> has merged_at
   //         open    -> state open
@@ -3337,7 +3338,7 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
       statusEl.textContent = EMPTY_MSG[filter];
       return;
     }
-    const shown = expanded ? list : list.slice(0, PR_COLLAPSED);
+    const shown = list.slice(0, PR_COLLAPSED);
     const ul = el('ul', 'gh-list');
     shown.forEach(p => ul.appendChild(prItem(p)));
     prBody.appendChild(ul);
@@ -3345,19 +3346,16 @@ document.querySelectorAll('.sgrid-card[data-project]').forEach(card => {
 
     if(list.length > PR_COLLAPSED){
       moreWrap.hidden = false;
-      moreBtn.textContent = expanded ? 'Show Less' : 'View All';
-      moreBtn.setAttribute('aria-expanded', String(expanded));
+      moreBtn.href = PR_FULL_PAGE + '?status=' + filter;   // opens the same tab (Merged / Open / Closed) on the full page
     }
     statusEl.textContent = 'Showing ' + shown.length + ' of ' + list.length + ' ' + filter + ' pull requests';
   }
 
   filterBtns.forEach(btn => btn.addEventListener('click', () => {
     filter = btn.dataset.filter;
-    expanded = false;
     filterBtns.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
     renderPrs();
   }));
-  moreBtn.addEventListener('click', () => { expanded = !expanded; renderPrs(); });
 
   /* ═════════════ boot ═════════════ */
   // Reserve the layout immediately, but only hit the network once the section is near the viewport.
