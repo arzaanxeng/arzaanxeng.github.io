@@ -1778,6 +1778,35 @@ footer a:hover{text-decoration-color:var(--text);}
 }
 .skip-link{position:fixed;left:12px;top:-60px;z-index:2000;padding:10px 16px;background:var(--text);color:var(--bg);border-radius:8px;font-weight:600;text-decoration:none;transition:top .15s ease;}
 .skip-link:focus{top:12px;}
+
+/* ═══════════════════════════════════
+   MOBILE LAYOUT FIXES (phones / small tablets)
+   Appended last on purpose. Every rule sits inside a max-width query, so laptop/desktop is unchanged.
+   ═══════════════════════════════════ */
+@media (max-width:760px){
+  /* One consistent side gutter. Projects and Resume add their own inner padding ON TOP of the section
+     padding, so their cards sat ~40px from the screen edge while Skills / Building / GitHub sat at 20px. */
+  #projects .section__head, .sgrid,
+  #resume .section__head, .cred{padding-left:0; padding-right:0;}
+  /* the hero used a slightly bigger gutter (24px) than every other section */
+  .hero{padding-left:clamp(20px,5vw,80px); padding-right:clamp(20px,5vw,80px);}
+  /* tree card fills the content column instead of floating as a 280px box */
+  .hero__treeviz{width:min(100%,420px);}
+}
+@media (max-width:480px){
+  /* "View Projects" and "Resume" sit side by side instead of stacking into three rows */
+  .hero__actions{flex-direction:row; flex-wrap:wrap; align-items:center; gap:14px 20px;}
+  /* the 2-column credential cards were ~145px wide and wrapped text into 6 lines */
+  .cred-stats{grid-template-columns:1fr;}
+  /* comfortable tap target for the Merged / Open / Closed filters */
+  .gh-filter{min-height:36px;}
+}
+@media (max-width:600px){
+  /* PR rows: the date moves under the repo name so long titles get the full row width
+     (before, the date took ~85px on the right and titles were cut to 2 short lines) */
+  .gh-pr{grid-template-columns:auto minmax(0,1fr); row-gap:2px;}
+  .gh-pr__meta{grid-column:2;}
+}
 </style>
 </head>
 <body>
