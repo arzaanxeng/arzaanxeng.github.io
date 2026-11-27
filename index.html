@@ -1801,6 +1801,12 @@ footer a:hover{text-decoration-color:var(--text);}
   /* comfortable tap target for the Merged / Open / Closed filters */
   .gh-filter{min-height:36px;}
 }
+@media (max-width:760px){
+  /* Tap targets: GitHub / LinkedIn / Resume / "Reach out here" were only 12-22px tall (min ~44px recommended).
+     An invisible ::after grows the hit area without moving the text or its underline. */
+  .hero__socials a, .hero__actions .text-link, .cred-mail a{position:relative;}
+  .hero__socials a::after, .hero__actions .text-link::after, .cred-mail a::after{content:""; position:absolute; inset:-14px -6px;}
+}
 @media (max-width:600px){
   /* PR rows: the date moves under the repo name so long titles get the full row width
      (before, the date took ~85px on the right and titles were cut to 2 short lines) */

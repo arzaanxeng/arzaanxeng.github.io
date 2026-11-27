@@ -9,6 +9,12 @@
 <meta name="theme-color" content="#0B0B0D">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://arzaanxeng.github.io/pull-requests.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pull Requests · Syed Arzaan">
+<meta property="og:description" content="Open source pull requests by Syed Arzaan — merged, open and closed, newest first.">
+<meta property="og:url" content="https://arzaanxeng.github.io/pull-requests.html">
+<meta property="og:image" content="https://arzaanxeng.github.io/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -116,8 +122,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}
 
 @media (max-width:600px){
   .page{padding-top:36px;}
-  .pr{gap:12px;}
+  /* date moves under the repo name so long titles get the full row width */
+  .pr{grid-template-columns:auto minmax(0,1fr);gap:2px 12px;margin:0;padding:16px 0;}
+  .pr .dot{grid-row:1 / span 2;align-self:start;margin-top:7px;}
+  .pr__main{grid-column:2;}
+  .pr__meta{grid-column:2;}
   .pr__arrow{display:none;}
+  /* pager: keep Previous / Next on one line, drop the "1-10 of 27" range (still on desktop) */
+  .pager{gap:8px;}
+  .btn{white-space:nowrap;padding:9px 14px;}
+  .pager__range{display:none;}
 }
 </style>
 </head>
@@ -364,7 +378,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;}
       pagerEl.hidden = false;
       prevBtn.disabled = page <= 1;
       nextBtn.disabled = page >= pages;
-      infoEl.textContent = 'Page ' + page + ' of ' + pages + ' · ' + (start + 1) + '–' + (start + slice.length) + ' of ' + list.length;
+      infoEl.replaceChildren('Page ' + page + ' of ' + pages, el('span', 'pager__range', ' · ' + (start + 1) + '–' + (start + slice.length) + ' of ' + list.length));
     }
     document.title = STATUS_TEXT[status] + ' Pull Requests · Syed Arzaan';
   }
